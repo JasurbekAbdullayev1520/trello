@@ -1,4 +1,18 @@
 from django.db import models
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
+
+
+class Category(models.Model):
+    name = models.CharField(max_length=255)
+    description = models.TextField(blank=True, default='')
+
+    def __str__(self):
+        return self.name
+    
+    def __repr__(self):
+        return self.name
 
 
 class Task(models.Model):
@@ -16,7 +30,6 @@ class Task(models.Model):
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True, null=True)
     due_date = models.DateTimeField(blank=True, null=True)
-    attechment = models.FileField(blank=True, null=True, upload_to='attechments/')
     status = models.CharField(
         max_length=5,
         choices=StatusChoices.choices,
@@ -30,6 +43,9 @@ class Task(models.Model):
         blank=True,
     )
 
+    user = models.ForeignKey(User, related_name='tasks', on_delete=models.CASCADE)
+    categories = models.ManyToManyField(Category)
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -38,3 +54,26 @@ class Task(models.Model):
     
     def __repr__(self):
         return self.title
+
+
+class Attechment(models.Model):
+    attechment_file = models.FileField(blank=True, null=True, upload_to='attechments/%Y/%m/%d/')
+    task = models.ForeignKey(Task, related_name='attechments', on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.task.title
+    
+    def __repr__(self):
+        return self.task.title 
+
+
+class SubTask(models.Model):
+    title = models.CharField(max_length=255)
+    description = models.TextField(blank=True, null=True)
+    task = models.ForeignKey(Task, related_name='subtasks', on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.task.title
+    
+    def __repr__(self):
+        return self.task.title 
